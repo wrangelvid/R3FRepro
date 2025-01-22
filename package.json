@@ -15,7 +15,7 @@
     "@react-three/fiber": "^8.17.12",
     "@react-three/uikit": "^0.8.5",
     "@react-three/xr": "6.5.1",
-    "@react-three/handle": "6.5.1-alpha.2",
+    "@react-three/handle": "6.5.2",
     "@types/three": "^0.172.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
