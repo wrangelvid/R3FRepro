@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
+import { OrbitHandles } from "@react-three/handle";
 import { type Mesh } from "three";
 import {
   createXRStore,
@@ -10,8 +10,7 @@ import {
   XR,
   XRStoreOptions,
 } from "@react-three/xr";
-import { Fullscreen } from "@react-three/uikit";
-import { EnterXRButton } from "./EnterXRButton";
+import { Container, Fullscreen } from "@react-three/uikit";
 
 function SpinningCube() {
   const cubeRef = useRef<Mesh>(null);
@@ -84,21 +83,38 @@ export default function App() {
         <ambientLight intensity={0.5} />
         <directionalLight position={[5, 5, 5]} />
         <SpinningCube />
-        <OrbitControls />
         <IfInSessionMode deny={["immersive-ar", "immersive-vr"]}>
-          <Fullscreen
-            flexDirection="row"
-            padding={20}
-            paddingRight={50}
-            alignItems="flex-start"
-            justifyContent="flex-end"
-            pointerEvents="listener"
-            pointerEventsOrder={3}
-          >
-            <EnterXRButton />
-          </Fullscreen>
+          <OrbitHandles />
+        </IfInSessionMode>
+        <IfInSessionMode allow={["immersive-ar", "immersive-vr"]}>
+          <HUD />
         </IfInSessionMode>
       </XR>
     </Canvas>
   );
+}
+
+
+const CUBE_SIZE = 100
+// Another funny issue is when we exit the session on the quest, resize the browser and re-enter then the HUD size will change.
+function HUD() {
+  return (
+    <Fullscreen
+    flexDirection="column"
+    // distanceToCamera={0.1} // This behaves strangely.
+    transformTranslateZ={-1000} // Without this the HUD is too close.
+    backgroundColor="brown"
+    backgroundOpacity={0.3}
+    
+    >
+      <Container>
+        <Container width={CUBE_SIZE} height={CUBE_SIZE} backgroundColor="red" />
+        <Container marginLeft="auto" width={CUBE_SIZE} height={CUBE_SIZE} backgroundColor="blue" />
+      </Container>
+      <Container marginTop="auto" >
+        <Container width={CUBE_SIZE} height={CUBE_SIZE} backgroundColor="green" />
+        <Container marginLeft="auto" width={CUBE_SIZE} height={CUBE_SIZE} backgroundColor="purple" />
+      </Container>
+    </Fullscreen>
+  )
 }
