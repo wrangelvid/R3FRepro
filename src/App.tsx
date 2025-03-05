@@ -1,36 +1,13 @@
-import { useRef } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
-import { type Mesh } from "three";
+import { Canvas } from "@react-three/fiber";
 import {
   createXRStore,
-  IfInSessionMode,
   noEvents,
   PointerEvents,
   XR,
   XRStoreOptions,
 } from "@react-three/xr";
-import { Fullscreen } from "@react-three/uikit";
-import { EnterXRButton } from "./EnterXRButton";
-
-function SpinningCube() {
-  const cubeRef = useRef<Mesh>(null);
-
-  // Animate rotation using useFrame
-  useFrame(() => {
-    if (cubeRef.current) {
-      cubeRef.current.rotation.x += 0.01;
-      cubeRef.current.rotation.y += 0.01;
-    }
-  });
-
-  return (
-    <mesh ref={cubeRef}>
-      <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial color="yellow" />
-    </mesh>
-  );
-}
+import { OrbitHandles } from "@react-three/handle";
+import { UIKoota } from "./UIKoota";
 
 export default function App() {
   const options: XRStoreOptions = {
@@ -83,21 +60,10 @@ export default function App() {
         <PointerEvents batchEvents={false} />
         <ambientLight intensity={0.5} />
         <directionalLight position={[5, 5, 5]} />
-        <SpinningCube />
-        <OrbitControls />
-        <IfInSessionMode deny={["immersive-ar", "immersive-vr"]}>
-          <Fullscreen
-            flexDirection="row"
-            padding={20}
-            paddingRight={50}
-            alignItems="flex-start"
-            justifyContent="flex-end"
-            pointerEvents="listener"
-            pointerEventsOrder={3}
-          >
-            <EnterXRButton />
-          </Fullscreen>
-        </IfInSessionMode>
+
+        <UIKoota />
+
+        <OrbitHandles />
       </XR>
     </Canvas>
   );
