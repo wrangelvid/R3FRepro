@@ -10,7 +10,7 @@ import {
   XR,
   XRStoreOptions,
 } from "@react-three/xr";
-import { Fullscreen } from "@react-three/uikit";
+import { Container, Fullscreen, Root } from "@react-three/uikit";
 import { EnterXRButton } from "./EnterXRButton";
 
 function SpinningCube() {
@@ -83,7 +83,18 @@ export default function App() {
         <PointerEvents batchEvents={false} />
         <ambientLight intensity={0.5} />
         <directionalLight position={[5, 5, 5]} />
-        <SpinningCube />
+
+
+        <mesh>
+            <boxGeometry args={[0.1, 0.1, 0.1]} />
+            <meshStandardMaterial color="blue" />
+        </mesh>
+
+        <Root anchorY="bottom" backgroundColor="blue">
+            <Container width={400} height={400} backgroundColor="red" />
+        </Root>
+
+
         <OrbitHandles damping />
         <IfInSessionMode deny={["immersive-ar", "immersive-vr"]}>
         <Fullscreen
