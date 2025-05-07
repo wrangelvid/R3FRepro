@@ -1,104 +1,96 @@
-import { useRef } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas } from "@react-three/fiber";
 import { OrbitHandles } from "@react-three/handle";
-import { type Mesh } from "three";
 import {
-  createXRStore,
-  IfInSessionMode,
   noEvents,
   PointerEvents,
-  XR,
-  XRStoreOptions,
 } from "@react-three/xr";
-import { Fullscreen } from "@react-three/uikit";
-import { EnterXRButton } from "./EnterXRButton";
+import { Text, Container, Fullscreen } from "@react-three/uikit";
+import { createWorld, type Entity, trait } from "koota";
+import { useQuery, WorldProvider } from "koota/react";
+import { useEffect, useMemo } from "react";
 
-function SpinningCube() {
-  const cubeRef = useRef<Mesh>(null);
+export default function App() {
 
-  // Animate rotation using useFrame
-  useFrame(() => {
-    if (cubeRef.current) {
-      cubeRef.current.rotation.x += 0.01;
-      cubeRef.current.rotation.y += 0.01;
+  useEffect(() => {
+    const timers = [];
+    for (let i = 0; i < 2; i++) {
+      timers.push(setTimeout(() => {
+        reproduceBug();
+      }, i * 2000));
     }
-  });
+
+    return () => {
+      timers.forEach((timer) => {
+        clearTimeout(timer);
+      });
+      world.reset();
+    };
+
+  }, []);
 
   return (
-    <mesh ref={cubeRef}>
-      <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial color="yellow" />
-    </mesh>
+    <WorldProvider world={world}>
+      <Canvas events={noEvents}>
+          <PointerEvents batchEvents={false} />
+          <ambientLight intensity={0.5} />
+          <directionalLight position={[5, 5, 5]} />
+
+
+          <OrbitHandles damping />
+          <Fullscreen pointerEvents="listener">
+            <TextList />
+          </Fullscreen>
+      </Canvas>
+    </WorldProvider>
   );
 }
 
-export default function App() {
-  const options: XRStoreOptions = {
-    handTracking: true,
-    foveation: 0,
-    domOverlay: false,
-    hand: {
-      touchPointer: {
-        cursorModel: {
-          color: "blue",
-          size: 0.2,
-        },
-      },
-      grabPointer: {
-        cursorModel: {
-          color: "hotpink",
-          size: 0.2,
-        },
-      },
-      rayPointer: {
-        rayModel: { color: "green" },
-        cursorModel: {
-          color: "green",
-          size: 0.2,
-        },
-      },
-      teleportPointer: false,
-    },
-    controller: {
-      grabPointer: {
-        cursorModel: {
-          color: "hotpink",
-          size: 0.2,
-        },
-      },
-      rayPointer: {
-        rayModel: { color: "green" },
-        cursorModel: {
-          color: "green",
-          size: 0.2,
-        },
-      },
-      teleportPointer: false,
-    },
-  };
-  const store = createXRStore(options);
+
+const world = createWorld();
+const TextTrait = trait({
+  text: "", 
+});
+
+
+function reproduceBug() {
+  const all_entitites: Entity[] = [];
+  for (let i = 0; i < 20; i++) {
+    const entity = world.spawn(TextTrait({text: `Hello World ${i}`}));
+    all_entitites.push(entity);
+  }
+
+  const timer = setTimeout(() => {
+    all_entitites.forEach((entity, idx) => {
+      setTimeout(() => {
+        if (entity.isAlive()) {
+          entity.destroy();
+        }
+      }, idx * 200);
+    });
+  }, 5000);
+  return timer;
+}
+
+function TextList() {
+  const textEntities = useQuery(TextTrait);
+
   return (
-    <Canvas events={noEvents}>
-      <XR store={store}>
-        <PointerEvents batchEvents={false} />
-        <ambientLight intensity={0.5} />
-        <directionalLight position={[5, 5, 5]} />
-        <SpinningCube />
-        <OrbitHandles damping />
-        <IfInSessionMode deny={["immersive-ar", "immersive-vr"]}>
-        <Fullscreen
-          pointerEvents="listener"
-          flexDirection="row"
-          padding={20}
-          paddingRight={50}
-           alignItems="flex-start"
-          justifyContent="flex-end"
-          pointerEventsOrder={2}
-        >
-          <EnterXRButton />
-        </Fullscreen>
-        </IfInSessionMode>
-      </XR>
-    </Canvas>
-  );
+    <Container flexDirection="column">
+      {textEntities.map((entity) => (
+        <TextFromEntity key={entity} entity={entity} />
+      ))}
+    </Container>
+  )
+}
+
+interface TextFromEntityProps {
+  entity: Entity;
+}
+
+function TextFromEntity({entity}: TextFromEntityProps) {
+  const text = useMemo(() =>  entity.get(TextTrait)!.text, [entity]);
+
+  return (
+    <Text>{text}</Text>
+  )
 }
